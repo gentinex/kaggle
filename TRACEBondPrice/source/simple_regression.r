@@ -13,11 +13,7 @@
 # has one past data point (i.e., there are cross-relationships
 # among the disjoint subsets)
 
-SimpleRegression <- function(){
-  print("Reading in data")
-  train <-read.csv( "../data/train.csv",  header = TRUE, na.strings = "NA")
-  test <-read.csv( "../data/test.csv",  header = TRUE, na.strings = "NA")
-
+SimpleRegression <- function(train, test){
   print("Subsetting training set")
   train.1 <- train[is.na(train$trade_price_last2),]
   train.2 <- train[!is.na(train$trade_price_last2) & is.na(train$trade_price_last3),]
