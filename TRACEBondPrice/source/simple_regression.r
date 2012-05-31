@@ -14,7 +14,7 @@
 # among the disjoint subsets)
 
 SimpleRegression <- function(train, test){
-  print("Subsetting training set")
+  #print("Subsetting training set")
   train.1 <- train[is.na(train$trade_price_last2),]
   train.2 <- train[!is.na(train$trade_price_last2) & is.na(train$trade_price_last3),]
   train.3 <- train[!is.na(train$trade_price_last3) & is.na(train$trade_price_last4),]
@@ -26,7 +26,7 @@ SimpleRegression <- function(train, test){
   train.9 <- train[!is.na(train$trade_price_last9) & is.na(train$trade_price_last10),]
   train.10 <- train[!is.na(train$trade_price_last10),]
 
-  print("Running the ten regressions")
+  #print("Running the ten regressions")
   lm.1 <- lm(train.1$trade_price ~ train.1$trade_price_last1)
   lm.2 <- lm(train.2$trade_price ~ train.2$trade_price_last1 + train.2$trade_price_last2)
   lm.3 <- lm(train.3$trade_price ~ train.3$trade_price_last1 + train.3$trade_price_last2 + train.3$trade_price_last3)
@@ -42,7 +42,7 @@ SimpleRegression <- function(train, test){
   # test.1, test.2, etc., but the problem is that we then can't run predict(),
   # which is expecting variable names train.1$x, train.1$y, train.2$x, and so
   # on. so we instead just name the subsets train.1, train.2, and so on.
-  print("Subsetting test set")
+  #print("Subsetting test set")
   train.1 <- test[is.na(test$trade_price_last2),]
   train.2 <- test[!is.na(test$trade_price_last2) & is.na(test$trade_price_last3),]
   train.3 <- test[!is.na(test$trade_price_last3) & is.na(test$trade_price_last4),]
@@ -54,7 +54,7 @@ SimpleRegression <- function(train, test){
   train.9 <- test[!is.na(test$trade_price_last9) & is.na(test$trade_price_last10),]
   train.10 <- test[!is.na(test$trade_price_last10),]
 
-  print("Predicting on test set")
+  #print("Predicting on test set")
   test.1.trade.price <- predict(lm.1, train.1)
   test.2.trade.price <- predict(lm.2, train.2)
   test.3.trade.price <- predict(lm.3, train.3)
@@ -66,7 +66,7 @@ SimpleRegression <- function(train, test){
   test.9.trade.price <- predict(lm.9, train.9)
   test.10.trade.price <- predict(lm.10, train.10)
 
-  print("Creating the predictions")
+  #print("Creating the predictions")
   predictions_df = data.frame(id=c(), trade_price=c())
   predictions_df = rbind(predictions_df, data.frame(id=train.1$id, trade_price=test.1.trade.price))
   predictions_df = rbind(predictions_df, data.frame(id=train.2$id, trade_price=test.2.trade.price))
