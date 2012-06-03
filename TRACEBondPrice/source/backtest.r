@@ -16,17 +16,17 @@ BacktestUnsupervised <- function(){
   time <- RecordTime(time)
 
   print('Making basic Kalman Filter prediction...')
-  predictions.kalman.id = KalmanFilter(train, simple=TRUE)
+  predictions.kalman.id = KalmanFilter(train, train, simple=TRUE)
   print(paste('Weighted MSE is', WeightedMSE(predictions.kalman.id, train)))
   time <- RecordTime(time)
 
   print('Making sqrt Kalman Filter prediction...')
-  predictions.kalman.sqrt = KalmanFilter(train, timemap=sqrt, simple=TRUE)
+  predictions.kalman.sqrt = KalmanFilter(train, train, timemap=sqrt, simple=TRUE)
   print(paste('Weighted MSE is', WeightedMDS(predictions.kalman.sqrt, train)))
   time <- RecordTime(time)
 
   print('Making square Kalman Filter predictions...')
-  predictions.kalman.square = KalmanFilter(train, timemap=function(x) return(x*x), simple=TRUE)
+  predictions.kalman.square = KalmanFilter(train, train, timemap=function(x) return(x*x), simple=TRUE)
   print(paste('Weighted MSE is', WeightedMDS(predictions.kalman.square, train)))
   time <- RecordTime(time)
 }
@@ -77,11 +77,11 @@ CrossValidate <- function(num.folds){
     time <- RecordTime(time)
 
     print('Making Kalman filter sqrt prediction', i)
-    predictions.kalman.sqrt <- KalmanFilter(used.test, timemap=sqrt, simple=TRUE)
+    predictions.kalman.sqrt <- KalmanFilter(train, used.test, timemap=sqrt, simple=TRUE)
     time <- RecordTime(time)
 
     print('Making Kalman filter identity prediction', i)
-    predictions.kalman.identity <- KalmanFilter(used.test, timemap=identity, simple=TRUE)
+    predictions.kalman.identity <- KalmanFilter(train, used.test, timemap=identity, simple=TRUE)
     time <- RecordTime(time)
 
     #print('Making simple linear regression prediction', i)
