@@ -8,11 +8,14 @@
 # curve price (presumably based on the time diff)
 
 # TODO:
-# (1) figure out best way to combine simple and curve KFs. right
-#     now doing averaging which works surprisingly well, but
-#     maybe there's some way to look at how to select one vs.
-#     the other depending on trade features or price history?
-# (2) figure out how to incorporate trade sizes into the price adjustments
+# (1) try minor mods to the existing algorithm:
+#     (a) use the value of the use.control flag to determine
+#         what scale to use for the measurement var
+#     (b) instead of comparing control to state, compare
+#         control to prior (after calcing the prior based on state)
+#         to determine whether or not to use the control
+# (2) figure out how to incorporate trade sizes into the price
+#     adjustments - only doing for variances so far..
 #     when incorporating into variances, seems to work better on
 #     curve-based than on simple KF
 # (3) is there some way in which we can use the received time diffs?
@@ -29,6 +32,8 @@
 #  maybe setting the measurement var a certain way means the
 #  estimates will reflect that. or if not, it could just
 #  represent how well the model reflects reality.
+# -still, would be better to find a better way to dynamically
+#  adjust the measurement var rather than use a static one throughout
 
 # use minisculeVar to get around division by zero issues
 minisculeVar <- 1e-10
@@ -60,7 +65,8 @@ Predict <- function(price.names, curve.names, timediff.names, size.names,
   state <- prior.info[1, 1]
   state.error.var <- 1
   xform <- 1
-
+  use.control <- FALSE
+  
   if(num.prior.points > 1){
     for(i in 2:num.prior.points){
       # state and measurement var - lot of flexibility here..
@@ -72,26 +78,32 @@ Predict <- function(price.names, curve.names, timediff.names, size.names,
       # ratio around 10 seemed to work well
       # when using curve-based prices as a control, 1:1 works better
       state.var <- 1 / (prior.info[i - 1, 4] + minisculeVar)
-      measurement.var <- 1 / (prior.info[i, 4] + minisculeVar)
+      measurement.var <- 10 / (prior.info[i, 4] + minisculeVar)
       
       # time update
+      # note the selective choice to not use the control if current state is closer
+      # to the new observation than the control is
       control <- prior.info[i, 2]
-      if(control.weight==0 || is.na(control))
+      observation <- prior.info[i, 1]
+      use.control <- !(control.weight==0 || is.na(control) || (abs(state - observation) < abs(control - observation)))
+      if(!use.control)
         prior <- state
       else
         prior <- state.weight * state + control.weight * control
       state.error.var.prior <- state.weight * state.error.var * state.weight + state.var
       
       # measurement update
-      observation <- prior.info[i, 1]
       gain <- (state.error.var.prior * xform) / (xform * state.error.var.prior * xform + measurement.var)
       state <- prior + gain * (observation - xform * prior)
       state.error.var <- (1 - gain * xform) * state.error.var.prior
     }
   }
 
-  current.curve <- row['curve_based_price']
-  final.state <- state.weight * state + control.weight * current.curve
+  control <- row['curve_based_price']
+  if(!use.control)
+    final.state <- state
+  else
+    final.state <- state.weight * state + control.weight * control
   return(final.state)
 }
 
