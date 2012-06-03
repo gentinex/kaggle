@@ -41,3 +41,30 @@ RecordTime <- function(time){
   print(paste('Took', round((proc.time() - time)[['elapsed']], 2), 'seconds'))
   return(proc.time())
 }
+
+AveragePredictions <- function(prediction.list, weights=1){
+  num.predictions <- length(prediction.list)
+  stopifnot(length(weights) %in% c(1, num.predictions))
+  if(length(weights) == 1)
+    weights <- rep(weights, num.predictions)
+
+  average.prediction <- data.frame(id=c(), trade_price=c())
+  average.prediction.name <- ''
+
+  for(i in 1:num.predictions){
+    prediction <- read.csv(paste('../predict/', prediction.list[i], '.csv', sep=''), header=TRUE)
+    if(i == 1){
+      average.prediction <- prediction
+      average.prediction$trade_price <- average.prediction$trade_price * weights[i]
+      average.prediction.name <- prediction.list[1]
+    }
+    else{
+      average.prediction$trade_price <- average.prediction$trade_price + prediction$trade_price * weights[i]
+      average.prediction.name <- paste(average.prediction.name, prediction.list[i], sep='_')
+    }
+  }
+
+  average.prediction$trade_price <- average.prediction$trade_price / sum(weights)
+  write.csv(average.prediction, paste('../predict/Average_', average.prediction.name, '.csv', sep=''),
+            quote=FALSE, row.names=FALSE)
+}
