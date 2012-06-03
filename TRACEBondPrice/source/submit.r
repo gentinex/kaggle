@@ -7,8 +7,10 @@ source('kalman_filter.r')
 Submit <- function(submit.type){
   time <- proc.time()
   print('Reading the data...')
-  if(submit.type %in% c('RandomForestBenchmark', 'SimpleRegression'))
+  if(submit.type %in% c('RandomForestBenchmark', 'SimpleRegression', 'CurveKalmanFilter'))
     train <-read.csv( '../data/train.csv',  header = TRUE, na.strings = 'NA')
+  else
+    train <- NA
   test <-read.csv( '../data/test.csv',  header = TRUE, na.strings = 'NA')
   time <- RecordTime(time)
 
@@ -20,11 +22,13 @@ Submit <- function(submit.type){
   else if(submit.type=='Constant')
     predictions <- Constant(test)
   else if(submit.type=='SimpleKalmanFilter')
-    predictions <- KalmanFilter(test, simple=TRUE)
+    predictions <- KalmanFilter(train, test, simple=TRUE)
   else if(submit.type=='SimpleKalmanFilterSqrt')
-    predictions <- KalmanFilter(test, simple=TRUE, timemap=sqrt)
+    predictions <- KalmanFilter(train, test, simple=TRUE, timemap=sqrt)
   else if(submit.type=='SimpleKalmanFilterSquare')
-    predictions <- KalmanFilter(test, simple=TRUE, timemap=function(x) return(x*x))
+    predictions <- KalmanFilter(train, test, simple=TRUE, timemap=function(x) return(x*x))
+  else if(submit.type=='CurveKalmanFilter')
+    predictions <- KalmanFilter(train, test, simple=FALSE)
   else stop('invalid submission type')
   time <- RecordTime(time)
 
